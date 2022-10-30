@@ -1,2 +1,4 @@
-# kyoto-protocol-evaluation
-An evaluation of the 1997 Kyoto Protocol, an international framework for reduction of CO2 emissions.
+# Climate Change Action: A Rich Country’s Game?
+Access to capital has been a central issue to climate change action ever since the UN recognized it as a pressing problem in 1992. Though the 1997 Kyoto Protocol, an international framework for CO2 emission reduction, was relatively a success story as Kim et al. Environmental and economic effectiveness of the Kyoto Protocol (2020) revealed in the paper on the economic and environmental impact, the question of access to monetary wealth still persist; Is Climate Change Action a “Rich” Country’s Game? We will compare the CO2 emission rates amongst other indicators of two distinct signatories of the Kyoto Protocol: Annex (developed) and non-Annex (in development).
+
+The project summary can be found in the Presentation - Zahir Sabotic.pdf file, where the investigation is provided in more detail. The R Notebook file contains all the code and the data can be found in Data folder. Should one decide to reproduce/use, they must remember to change the file path in readcsv() method.
