@@ -1,0 +1,169 @@
+---
+title: "Project"
+author: "Zahir"
+date: '2022-05-17'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyr)
+library (dplyr)
+library(ggplot2)
+```
+
+```{r, echo = FALSE}
+gdp = read.csv("~/Desktop/Katie/project data in csv/gdp_annex.csv")
+renewable = read.csv("~/Desktop/Katie/project data in csv/renewable energy_annex.csv")
+co2 = read.csv("~/Desktop/Katie/project data in csv/coo2.csv")
+names(co2)[names(co2) == "X1990"] = "1990"
+names(co2)[names(co2) == "X2012"] = "2012"
+names(renewable)[names(renewable) == "X1990"] <- "1990"
+names(renewable)[names(renewable) == "X2012"] <- "2012"
+
+```
+
+```{r}
+tidy_renewable = gather(renewable, Year, Value, "1990":"2012", factor_key=TRUE)
+tidy_co2 = gather(co2, Year, Value, "1990":"2012", factor_key=TRUE)
+head(tidy_renewable)
+head(tidy_co2)
+```
+
+
+```{r, echo = FALSE}
+tidy_co2$Annex = as.factor(tidy_co2$Annex)
+df = na.omit(tidy_co2)
+ggplot(df, aes(x=Annex, y=Value)) + 
+  geom_boxplot(outlier.shape = NA) + 
+  coord_cartesian(ylim =  c(0, 17)) +
+  facet_wrap(~ Year) +
+  xlab("Annex Countries (1 for signatory, 0 for not)") + ylab("CO2 emissions (metric tons per capita)")
+```
+
+Anova Test for Annex 0 countries for years 1990 and 2012 (no significance difference in means)
+```{r, echo = FALSE}
+anova_annex0 <- filter(tidy_co2, Annex==0)
+anova_anex0.lm = lm(Value ~ Year, data = anova_annex0)
+anova_anex0.av = aov(anova_anex0.lm)
+summary(anova_anex0.av)
+```
+Anova test for Annex 1 countries for years 1990 and 2012 (potential significance difference in means)
+```{r, echo = FALSE}
+anova_annex1 <- filter(tidy_co2, Annex==1)
+anova_anex1.lm = lm(Value ~ Year, data = anova_annex1)
+anova_anex1.av = aov(anova_anex1.lm)
+summary(anova_anex1.av)
+```
+
+Anova test for year 2012 for annex 1 and 0 countries (significant difference in means)
+```{r, echo = FALSE}
+anova_year2012 <- filter(tidy_co2, Year==2012)
+anova_year2012.lm = lm(Value ~ Annex, data = anova_year2012)
+anova_year2012.av = aov(anova_year2012.lm)
+summary(anova_year2012.av)
+
+group_by(anova_year2012, Annex) %>%
+  summarise(
+    mean = mean(Value, na.rm = TRUE),
+  )
+```
+Anova test for year 1990 for annex 1 and 0 countries (significant difference in means)
+```{r, echo = FALSE}
+anova_year1990 <- filter(tidy_co2, Year==1990)
+anova_year1990.lm = lm(Value ~ Annex, data = anova_year1990)
+anova_year1990.av = aov(anova_year1990.lm)
+summary(anova_year1990.av)
+
+group_by(anova_year1990, Annex) %>%
+  summarise(
+    mean = mean(Value, na.rm = TRUE),
+  )
+```
+
+```{r, echo = FALSE}
+tidy_renewable$Annex = as.factor(tidy_renewable$Annex)
+tidy_renewable$Value = as.double(tidy_renewable$Value) 
+df = na.omit(tidy_renewable)
+ggplot(df, aes(x=Annex, y=Value))  +
+ geom_boxplot(outlier.shape = NA) + 
+  coord_cartesian(ylim =  c(0, 100)) +
+  facet_wrap(~ Year) +
+  xlab("Annex Countries (1 for signatory, 0 for not)") + ylab("Renewable energy consumption (% of total) ")
+```
+
+```{r, echo = FALSE}
+gdp$X1990 = as.double(gdp$X1990) 
+gdp$X1991 = as.double(gdp$X1991) 
+gdp$X1992 = as.double(gdp$X1992) 
+gdp$X1993 = as.double(gdp$X1993) 
+gdp$X1994 = as.double(gdp$X1994) 
+gdp$X1995 = as.double(gdp$X1995) 
+gdp$X2010 = as.double(gdp$X2010) 
+gdp$X2011 = as.double(gdp$X2011) 
+gdp$X2012 = as.double(gdp$X2012) 
+gdp1 = gdp %>% rowwise() %>%
+  mutate(AverageGrowth = mean(c_across(X1990:X2012)))
+head(gdp1)
+```
+```{r, echo = FALSE}
+gdp1$Annex = as.factor(gdp1$Annex)
+df = na.omit(gdp1)
+ggplot(df, aes(x=AverageGrowth, color=Annex)) +
+  geom_histogram(fill="white", alpha=0.7, position="identity") +
+  xlab("Average GDP Growth (1990-2012)") + ylab("Count")
+
+```
+```{r, echo = FALSE}
+df = na.omit(gdp1)
+ggplot(df, aes(x=AverageGrowth))+
+  geom_histogram(color="white", fill="lightblue") +
+  facet_wrap(~ Annex) +
+  xlab("Average GDP Growth (1990-2012)") + ylab("Count")
+  
+```
+```{r, echo = FALSE}
+l_regression = read.csv("~/Desktop/Katie/project data in csv/l_regression.csv")
+logistic_test_df = subset(l_regression, select = -c(X:X.1)) 
+logistic_test_df = na.omit(logistic_test_df)
+logistic_test_df$Annex = as.numeric(logistic_test_df$Annex)
+names(logistic_test_df)[names(logistic_test_df) == "GDP_Growth.1990.2012."] <- "GDP_Growth"
+names(logistic_test_df)[names(logistic_test_df) == "Renewable.energy.consumption......2012."] <- "Energy_2012"
+names(logistic_test_df)[names(logistic_test_df) == "CO2.emissions..metric.tonnes.per.capita...2012."] <- "Emmissions_2012"
+head(logistic_test_df)
+```
+```{r, echo = FALSE}
+model <- glm(Annex ~ GDP_Growth+Energy_2012+Emmissions_2012, data=logistic_test_df, family=binomial)
+summary(model)
+exp(model$coefficients)
+```
+```{r, echo = FALSE}
+model <- glm(Annex ~ GDP_Growth+Emmissions_2012, data=logistic_test_df, family=binomial)
+summary(model)
+```
+Coefficients and odds ratio
+```{r, echo = FALSE}
+summary(model)$coefficients
+exp(model$coefficients)
+```
+
+```{r, echo = FALSE}
+ggplot(logistic_test_df, aes(x=Emmissions_2012, y=Annex)) + 
+  geom_point(alpha=.5) +
+  stat_smooth(method="glm", se=FALSE, method.args = list(family=binomial),
+              col="ivory4", lty=1)
+```
+```{r, echo = FALSE}
+ggplot(logistic_test_df, aes(x=GDP_Growth, y=Annex)) + 
+  geom_point(alpha=.5) +
+  stat_smooth(method="glm", se=FALSE, method.args = list(family=binomial),
+              col="ivory4", lty=1)
+```
+
+```{r, echo = FALSE}
+model <- glm(Annex ~ Energy_2012, data=logistic_test_df, family=binomial)
+summary(model)
+exp(model$coefficients)
+  
+```
+
